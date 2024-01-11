@@ -17,6 +17,8 @@ import {Nonces} from "../../../utils/Nonces.sol";
  * presenting a message signed by the account. By not relying on `{IERC20-approve}`, the token holder account doesn't
  * need to send a transaction, and thus is not required to hold Ether at all.
  */
+
+ // this allows approvals to be made via signatures. basically we can signed a tx without sending it and let somebody else send the tx.
 abstract contract ERC20Permit is ERC20, IERC20Permit, EIP712, Nonces {
     bytes32 private constant PERMIT_TYPEHASH =
         keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
@@ -41,6 +43,8 @@ abstract contract ERC20Permit is ERC20, IERC20Permit, EIP712, Nonces {
     /**
      * @inheritdoc IERC20Permit
      */
+     // the function permit takes  owner, spender, value, v,r,s signature para and deadline for the last time that the signature is valid if the signature is 
+     //valied than anyone can call this funciton to approve the spender to spend value amount of tokens from the owner and the signature will be signed by the owner.
     function permit(
         address owner,
         address spender,
@@ -54,10 +58,16 @@ abstract contract ERC20Permit is ERC20, IERC20Permit, EIP712, Nonces {
             revert ERC2612ExpiredSignature(deadline);
         }
 
+        //PERMIT_TYPEHASH: This is a predefined constant representing a unique identifier for the permit function. It helps distinguish the type of operation being performed.
+        //value that represents the number of transactions sent from a particular address (EOA - Externally Owned Account). Each time an EOA sends a transaction, 
+        //its nonce increases by one. Nonces help prevent replay attacks and ensure the order and uniqueness of transactions sent by an account.
         bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, _useNonce(owner), deadline));
 
+        // the line is taking the previously computed structHash and further processing it through a function called _hashTypedDataV4. This step is likely
+        // part of a broader mechanism for handling typed data hashing, often used in Ethereum for structured data hashing according to the EIP-712 standard
         bytes32 hash = _hashTypedDataV4(structHash);
 
+        //It uses the ECDSA.recover function to recover the Ethereum address (signer) from a provided hash (hash) and the components of an ECDSA signature: v, r, and s.
         address signer = ECDSA.recover(hash, v, r, s);
         if (signer != owner) {
             revert ERC2612InvalidSigner(signer, owner);
@@ -65,6 +75,9 @@ abstract contract ERC20Permit is ERC20, IERC20Permit, EIP712, Nonces {
 
         _approve(owner, spender, value);
     }
+    //In summary, the permit function checks the validity of a permit signature, ensuring it is not expired and that the signer is the rightful owner. 
+    //If the checks pass, it approves the spender to spend a certain value of tokens on behalf of the owner.
+    // This mechanism allows token approvals to be made via a signed message, improving user experience and reducing the need for direct transactions.
 
     /**
      * @inheritdoc IERC20Permit

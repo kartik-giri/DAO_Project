@@ -1,4 +1,21 @@
 1. We are going to have contract controlled by DAO.
 2. Every tx that the DAO wants to send has to voted on 
 3. We will use ERC20 token for voting (Bad model, please research better models as i get better!!). even so this is most popular method industry is using.
- 
+
+Error fixed: git config http.postBuffer 524288000
+
+4. Abstract contracts can;t deploy it's self it needs child contract to inherit them and deploy them but, the deploy address will be only one, which will be of child contract.
+5. Abstract contract can't deploy itself so that's why we need to implement all the abstract contracts on our token contract and implement and initialize using constructor.
+
+# ERC20Permit
+1. Usually when there is contract which transact our erc20 token we need to approve the allowance to that contract first and then call the transactfrom function.
+2.How ever erc20 contract allow us to approve and transfer from in a single tx.
+3.In summary, the permit function checks the validity of a permit signature, ensuring it is not expired and that the signer is the rightful owner.
+  If the checks pass, it approves the spender to spend a certain value of tokens on behalf of the owner. 
+  This mechanism allows token approvals to be made via a signed message, improving user experience and reducing the need for direct transactions.
+4. Read permit contract code.
+5. watch smart contract programmer vide0.
+6.//alice
+        address spender, // contract gas-less 
+        uint256 value, // 11 dai
+        uint256 deadline, //now contract will call permit function on token and get approval for allowance then it will call transferfrom fun an dsen d it to carol from owner and with its gas price 
